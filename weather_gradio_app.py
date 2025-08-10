@@ -12,7 +12,7 @@ import uuid
 import pandas as pd
 import requests
 
-API_KEY = "AIzaSyA6cHPxopWmgzxj3suoECu4M3RpXmniqqc"
+API_KEY = ""
 
 @dataclass
 class MCPTool:
