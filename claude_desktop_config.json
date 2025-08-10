@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "weather": {
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "C:\\Users\\njach\\weather\\",
+                "--no-build"
+            ]
+        }
+    }
+}
