@@ -41,11 +41,11 @@ token = jwt.encode(
     algorithm="RS256"
 )
 
-print("✅ Self-signed JWT with custom claims:\n")
+print("Self-signed JWT with custom claims:\n")
 print(token)
 
 # Optional: decode without verification
 decoded = jwt.decode(token, options={"verify_signature": False})
-print("\n✅ Decoded claims:")
+print("\nDecoded claims:")
 for k, v in decoded.items():
     print(f"{k}: {v}")

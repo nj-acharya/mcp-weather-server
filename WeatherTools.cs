@@ -134,12 +134,12 @@ public static class WeatherTools
 
             if (!roleClaims.Contains("alerts:read"))
             {
-                return "🚫 Access denied: missing required role.";
+                return "Access denied: missing required role.";
             }
         }
         catch (Exception ex)
         {
-            return $"🚫 Invalid token: {ex.Message}";
+            return $"Invalid token: {ex.Message}";
         }
 
         string stateAbbreviation = GetStateByName(state);
