@@ -12,7 +12,7 @@ from dataclasses import dataclass
 # ------------------------
 # Config
 # ------------------------
-API_KEY = os.environ.get("GOOGLE_GEOCODE_API_KEY", "AIzaSyAiywomj4d0nJsbZ839cD9ORBPp-VUnfcA")
+API_KEY = os.environ.get("GOOGLE_GEOCODE_API_KEY", "<redacted>")
 REQUIRED_ROLE = os.environ.get("REQUIRED_ROLE", "alerts:read")
 
 # ------------------------
@@ -131,13 +131,13 @@ class WeatherMCPClient:
             res = loop.run_until_complete(self.call_tool("get_forecast", {"latitude": latitude, "longitude": longitude}))
             loop.close()
             if not res.get("success"):
-                return f"❌ Error: {res.get('error','Unknown error')}"
+                return f"Error: {res.get('error','Unknown error')}"
             data = res["data"]
             if "content" in data and isinstance(data["content"], list) and len(data["content"]) > 0:
                 return data["content"][0].get("text", str(data))
-            return f"📊 **Weather Forecast**\n\n{json.dumps(data, indent=2)}"
+            return f"**Weather Forecast**\n\n{json.dumps(data, indent=2)}"
         except Exception as e:
-            return f"❌ Error calling get_forecast: {e}"
+            return f"Error calling get_forecast: {e}"
 
     def get_alerts(self, state: str, id_token: Optional[str]) -> str:
         try:
@@ -149,13 +149,13 @@ class WeatherMCPClient:
             res = loop.run_until_complete(self.call_tool("get_alerts", args))
             loop.close()
             if not res.get("success"):
-                return f"❌ Error: {res.get('error','Unknown error')}"
+                return f"Error: {res.get('error','Unknown error')}"
             data = res["data"]
             if "content" in data and isinstance(data["content"], list) and len(data["content"]) > 0:
                 return data["content"][0].get("text", str(data))
             return f"🚨 **Weather Alerts for {state}**\n\n{json.dumps(data, indent=2)}"
         except Exception as e:
-            return f"❌ Error calling get_alerts: {e}"
+            return f"Error calling get_alerts: {e}"
 
     async def connect(self) -> bool:
         return await self.connect_to_mcp_server()
@@ -208,10 +208,10 @@ mcp_client = WeatherMCPClient()
 # ------------------------
 def accept_id_token(pasted_token: str):
     if not pasted_token.strip():
-        return "❌ No token provided", None, None
+        return "No token provided", None, None
     payload = parse_jwt_no_verify(pasted_token.strip())
     if not payload:
-        return "❌ Failed to parse token", None, None
+        return "Failed to parse token", None, None
 
     roles = []
     if isinstance(payload.get("roles"), list):
@@ -227,11 +227,11 @@ def accept_id_token(pasted_token: str):
             roles.append(REQUIRED_ROLE)
 
     user_ctx = {"sub": payload.get("sub"), "roles": roles, "claims": payload}
-    display = f"✅ Token accepted. Subject: {payload.get('sub')}\nClaims: {', '.join(roles) or '(none)'}"
+    display = f"Token accepted. Subject: {payload.get('sub')}\nClaims: {', '.join(roles) or '(none)'}"
     return display, user_ctx, pasted_token.strip()
 
 def clear_token():
-    return "🔒 Logged out.", None, None
+    return "Logged out.", None, None
 
 def connect_to_mcp() -> str:
     try:
@@ -241,35 +241,35 @@ def connect_to_mcp() -> str:
         loop.close()
         if success:
             tools_list = "\n".join([f"• **{t.name}**: {t.description}" for t in mcp_client.tools])
-            return f"✅ **Connected to MCP Server!**\n\n**Discovered Tools:**\n{tools_list}"
-        return "❌ **Failed to connect to MCP server**"
+            return f"**Connected to MCP Server!**\n\n**Discovered Tools:**\n{tools_list}"
+        return "**Failed to connect to MCP server**"
     except Exception as e:
-        return f"❌ **Connection Error**: {e}"
+        return f"**Connection Error**: {e}"
 
 def query_weather_forecast(location: str) -> str:
     if not location.strip():
-        return "❌ Please enter a location"
+        return "Please enter a location"
     if not mcp_client.connected:
-        return "❌ Not connected to MCP server. Please connect first."
+        return "Not connected to MCP server. Please connect first."
     coords = get_coordinates_from_location(location)
     if not coords:
-        return "❌ Failed to geocode location"
+        return "Failed to geocode location"
     return mcp_client.get_forecast(location, coords[0], coords[1])
 
 def query_weather_alerts(state: str, user_ctx, id_token) -> str:
     if not user_ctx or REQUIRED_ROLE not in (user_ctx.get("roles") or []):
-        return "🚫 Access denied: you don't have permission to view weather alerts."
+        return "Access denied: you don't have permission to view weather alerts."
     if not state.strip():
-        return "❌ Please enter a US state"
+        return "Please enter a US state"
     if not mcp_client.connected:
-        return "❌ Not connected to MCP server. Please connect first."
+        return "Not connected to MCP server. Please connect first."
     return mcp_client.get_alerts(state, id_token)
 
 # ------------------------
 # Build Gradio UI
 # ------------------------
 with gr.Blocks(title="Weather MCP Interface (GCP OIDC)", theme=gr.themes.Soft()) as demo:
-    gr.Markdown("# 🌤️ Weather Information via MCP (GCP ID Token based RBAC)")
+    gr.Markdown("# Weather Information via MCP (GCP ID Token based RBAC)")
 
     # Connection tab
     with gr.Tab("Connection"):
@@ -280,7 +280,7 @@ with gr.Blocks(title="Weather MCP Interface (GCP OIDC)", theme=gr.themes.Soft())
 
     # Forecast tab
     with gr.Tab("Weather Forecast"):
-        gr.Markdown("### 📊 Get Weather Forecast")
+        gr.Markdown("### Get Weather Forecast")
         location_input = gr.Textbox(label="Location", placeholder="Enter city name (e.g., 'London')")
         forecast_btn = gr.Button("Get Forecast", variant="primary")
         forecast_output = gr.Markdown("Connect to MCP server first, then query forecasts.")
@@ -288,7 +288,7 @@ with gr.Blocks(title="Weather MCP Interface (GCP OIDC)", theme=gr.themes.Soft())
 
     # Login tab
     with gr.Tab("Login"):
-        gr.Markdown("### 🔐 Sign in with your Google ID token")
+        gr.Markdown("### Sign in with your Google ID token")
         gr.Markdown("Authenticate separately, then paste your `id_token` (JWT) here.")
         idtoken_input = gr.Textbox(label="Paste Google ID Token (id_token)", lines=3)
         accept_btn = gr.Button("Accept ID Token", variant="primary")
@@ -302,7 +302,7 @@ with gr.Blocks(title="Weather MCP Interface (GCP OIDC)", theme=gr.themes.Soft())
 
     # Alerts tab (hidden by default)
     with gr.Tab("Weather Alerts", visible=False) as alerts_tab:
-        gr.Markdown("### 🚨 Get Weather Alerts (RBAC protected)")
+        gr.Markdown("### Get Weather Alerts (RBAC protected)")
         state_input = gr.Textbox(label="US State", placeholder="Enter US state name (e.g., 'California')")
         alerts_btn = gr.Button("Get Alerts", variant="secondary")
         alerts_output = gr.Markdown("Login first, then query alerts.")
