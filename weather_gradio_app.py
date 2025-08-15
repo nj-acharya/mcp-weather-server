@@ -153,7 +153,7 @@ class WeatherMCPClient:
             data = res["data"]
             if "content" in data and isinstance(data["content"], list) and len(data["content"]) > 0:
                 return data["content"][0].get("text", str(data))
-            return f"🚨 **Weather Alerts for {state}**\n\n{json.dumps(data, indent=2)}"
+            return f"**Weather Alerts for {state}**\n\n{json.dumps(data, indent=2)}"
         except Exception as e:
             return f"Error calling get_alerts: {e}"
 
