@@ -1,0 +1,11 @@
+import firebase_admin
+from firebase_admin import credentials, auth
+
+# Use your service account JSON key
+cred = credentials.Certificate("vertexai-250626-3b96a46922d7.json")
+firebase_admin.initialize_app(cred)
+
+uid = "vnI60x5bqAP61vrdFqZU61tjQHC3"  # from the Users tab in Identity Platform
+auth.set_custom_user_claims(uid, {"roles": ["alerts:read"]})
+
+print("Custom claim set.")
